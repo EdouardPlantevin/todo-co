@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un utilisateur{% endblock %}
+
+{% block body %}
+    <div class="row">
+        {{ form_start(form, {'action' : path('user_create')}) }}
+        {{ form_widget(form) }}
+
+        <button type="submit" class="btn btn-success pull-right">Ajouter</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
