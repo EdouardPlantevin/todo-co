@@ -3,12 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Form\TaskType;
 use App\Repository\TaskRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/tasks')]
@@ -33,6 +36,10 @@ class TaskController extends AbstractController
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+
+            /* Add User */
+            $task->setOwner($this->getUser());
+
             $this->manager->persist($task);
             $this->manager->flush();
 
@@ -85,6 +92,39 @@ class TaskController extends AbstractController
         $this->manager->flush();
 
         $this->addFlash('success', 'La tâche a bien été supprimée.');
+
+        return $this->redirectToRoute('task_list');
+    }
+
+    #[Route('/assign-anonymous', name: 'task_assign_anonymous')]
+    public function taskAnonymous(TaskRepository $taskRepository, UserRepository $userRepository, UserPasswordHasherInterface $hasher): Response
+    {
+        $user = $userRepository->findOneBy(['username' => 'anonyme']);
+
+        if (!$user) {
+            $user = new User();
+
+            $password = $hasher->hashPassword(
+                $user,
+                'password'
+            );
+
+            $user->setEmail('anonyme@anonyme.com')
+                ->setUsername('anonyme')
+                ->setPassword($password);
+
+            $this->manager->persist($user);
+        }
+
+        $tasks = $taskRepository->findBy(['owner' => null]);
+
+        foreach ($tasks as $task) {
+            $task->setOwner($user);
+        }
+
+        $this->manager->flush();
+
+        $this->addFlash("success", "Modification enregistrée");
 
         return $this->redirectToRoute('task_list');
     }
