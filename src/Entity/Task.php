@@ -29,6 +29,9 @@ class Task
     #[ORM\Column]
     private ?bool $isDone;
 
+    #[ORM\ManyToOne(inversedBy: 'tasks')]
+    private ?User $owner = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -84,6 +87,18 @@ class Task
     public function setIsDone(bool $isDone): self
     {
         $this->isDone = $isDone;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): self
+    {
+        $this->owner = $owner;
 
         return $this;
     }
