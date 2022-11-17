@@ -38,7 +38,7 @@ class TaskController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
 
             /* Add User */
-            $task->setOwner($this->getUser());
+            if ($this->getUser()) { $task->setOwner($this->getUser()); }
 
             $this->manager->persist($task);
             $this->manager->flush();
@@ -56,6 +56,12 @@ class TaskController extends AbstractController
     #[Route('/{id}/edit', name: 'task_edit')]
     public function editAction(Task $task, Request $request): Response
     {
+
+        /* Redirect wrong user */
+        if ($this->checkUserSecurity($task)) {
+            $this->addFlash("success", "Vous n'êtes pas autoriser à modifier cette tâche");
+            return $this->redirectToRoute('task_list');
+        }
 
         $form = $this->createForm(TaskType::class, $task);
         $form->handleRequest($request);
@@ -88,6 +94,12 @@ class TaskController extends AbstractController
     #[Route('/{id}/delete', name: 'task_delete')]
     public function deleteTaskAction(Task $task): Response
     {
+        /* Redirect wrong user */
+        if ($this->checkUserSecurity($task)) {
+            $this->addFlash("success", "Vous n'êtes pas autoriser à supprimer cette tâche");
+            return $this->redirectToRoute('task_list');
+        }
+
         $this->manager->remove($task);
         $this->manager->flush();
 
@@ -127,5 +139,17 @@ class TaskController extends AbstractController
         $this->addFlash("success", "Modification enregistrée");
 
         return $this->redirectToRoute('task_list');
+    }
+
+    private function checkUserSecurity(Task $task) {
+        if ($task->getOwner() !== $this->getUser() && $task->getOwner()->getUsername() !== "anonyme") {
+            return true;
+        }
+
+        if ($task->getOwner()->getUsername() == "anonyme" && !$this->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
+        return false;
     }
 }
