@@ -20,6 +20,7 @@
 ###< symfony/phpunit-bridge ###
 
 .idea
+reports
 
 ###> symfony/webpack-encore-bundle ###
 /node_modules/

@@ -113,7 +113,7 @@ class TaskController extends AbstractController
     {
         $user = $userRepository->findOneBy(['username' => 'anonyme']);
 
-        if (!$user) {
+/*        if (!$user) {
             $user = new User();
 
             $password = $hasher->hashPassword(
@@ -126,7 +126,7 @@ class TaskController extends AbstractController
                 ->setPassword($password);
 
             $this->manager->persist($user);
-        }
+        }*/
 
         $tasks = $taskRepository->findBy(['owner' => null]);
 
@@ -141,7 +141,8 @@ class TaskController extends AbstractController
         return $this->redirectToRoute('task_list');
     }
 
-    private function checkUserSecurity(Task $task) {
+    private function checkUserSecurity(Task $task): bool
+    {
         if ($task->getOwner() !== $this->getUser() && $task->getOwner()->getUsername() !== "anonyme") {
             return true;
         }

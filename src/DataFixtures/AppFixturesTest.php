@@ -9,7 +9,7 @@ use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class AppFixtures extends Fixture
+class AppFixturesTest extends Fixture
 {
 
     public function __construct(private UserPasswordHasherInterface $hasher){}
@@ -66,6 +66,25 @@ class AppFixtures extends Fixture
                 ->setTitle($faker->text(10))
                 ->setContent($faker->text(50))
                 ->setIsDone(rand(0, 1) == 0);
+
+            //User
+            if ($i == 0) {
+                $task->setOwner($users[0]);
+            }
+
+            //Admin
+            if ($i == 1) {
+                $task->setOwner($users[1]);
+            }
+            // Anonyme
+            if ($i == 2) {
+                $task->setOwner($users[2]);
+            }
+
+            // Null owner
+            if ($i == 3) {
+                $task->setOwner(null);
+            }
 
             $manager->persist($task);
         }
